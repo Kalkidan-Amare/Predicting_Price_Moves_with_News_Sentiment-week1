@@ -29,7 +29,7 @@ def run(output_dir: Path) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="Run Task 1 EDA pipeline")
-    parser.add_argument("--output", type=Path, default=Path("reports/task1"), help="Directory to store outputs")
+    parser.add_argument("--output", type=Path, default=Path("reports/task1"), help="Directory to store the outputs")
     args = parser.parse_args()
     run(args.output)
 
