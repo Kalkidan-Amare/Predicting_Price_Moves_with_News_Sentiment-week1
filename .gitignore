@@ -1,0 +1,45 @@
+# Data files
+data/
+*.csv
+*.parquet
+*.xlsx
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+venv/
+env/
+.Python
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Reports
+reports/*.pdf
+reports/*.docx
+
+# TA-Lib build artifacts
+talib/
+build/
+dist/
+
+# Secrets
+.env
+.env.*
+
+# Data cache
+.cache/
+
+
