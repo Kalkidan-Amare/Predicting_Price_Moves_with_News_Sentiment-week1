@@ -71,4 +71,4 @@ Merge via Pull Requests to ensure review history for interim/final submissions.
 
 ## Reporting
 - **Interim report:** Task 1 progress, Task 2 WIP (3 pages)
-- **Final report:** All tasks (10 pages, 10 plots), Medium-style narrative
+- **Final report:** All tasks roughly aoround(10 pages, 10 plots), Medium-style narrative
