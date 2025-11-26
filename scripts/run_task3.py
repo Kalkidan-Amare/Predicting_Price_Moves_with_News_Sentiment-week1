@@ -15,12 +15,16 @@ from src.sentiment_correlation import (
 def run(ticker: str, output_dir: Path) -> None:
     news = load_news_data()
     news = news[news["stock"] == ticker.upper()]
+    if news.empty:
+        raise ValueError(f"No news rows found for ticker {ticker}.")
     sentiment = compute_daily_sentiment(news)
 
     prices = load_price_data(ticker)
     returns = compute_daily_returns(prices)
 
     merged = pd.merge(sentiment, returns, on="date", how="inner")
+    if merged.empty:
+        raise ValueError("No overlapping dates between sentiment and returns datasets.")
     results = [
         correlate_sentiment_returns(merged, method="vader"),
         correlate_sentiment_returns(merged, method="blob"),

@@ -1,31 +1,24 @@
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass
 from typing import Literal, Tuple
 
-import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr, spearmanr
-try:
-    from textblob import TextBlob
-except ModuleNotFoundError:  # pragma: no cover
-    TextBlob = None
-
-try:
+try:  # pragma: no cover - optional dependency
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 except ModuleNotFoundError:  # pragma: no cover
-    SentimentIntensityAnalyzer = None
+    SentimentIntensityAnalyzer = None  # type: ignore[assignment]
+
+try:  # pragma: no cover - optional dependency
+    from textblob import TextBlob
+except ModuleNotFoundError:  # pragma: no cover
+    TextBlob = None  # type: ignore[assignment]
 
 
-def _get_analyzer() -> SentimentIntensityAnalyzer:
-    if SentimentIntensityAnalyzer is None:
-        raise ImportError(
-            "vaderSentiment is not installed. Install it via `pip install vaderSentiment` to run sentiment scoring."
-        )
-    return SentimentIntensityAnalyzer()
-
-
-analyzer = _get_analyzer() if SentimentIntensityAnalyzer else None
+_ANALYZER = SentimentIntensityAnalyzer() if SentimentIntensityAnalyzer else None
+_SENT_WARNED = False
 
 
 @dataclass
@@ -38,21 +31,33 @@ class SentimentResult:
 
 
 def score_headline(headline: str) -> Tuple[float, float]:
-    if analyzer is None or TextBlob is None:
-        raise ImportError(
-            "Sentiment libraries missing. Install `textblob` and `vaderSentiment` to score headlines."
-        )
     text = headline or ""
-    vader = analyzer.polarity_scores(text)["compound"]
+    global _SENT_WARNED
+    if _ANALYZER is None or TextBlob is None:
+        if not _SENT_WARNED:
+            warnings.warn(
+                "Sentiment libraries not installed; defaulting scores to 0. "
+                "Install `vaderSentiment` and `textblob` for full functionality.",
+                RuntimeWarning,
+            )
+            _SENT_WARNED = True
+        return 0.0, 0.0
+    vader = _ANALYZER.polarity_scores(text)["compound"]
     blob = TextBlob(text).sentiment.polarity
     return vader, blob
 
 
 def compute_daily_sentiment(df_news: pd.DataFrame) -> pd.DataFrame:
+    if df_news.empty:
+        return pd.DataFrame(columns=["date", "stock", "sent_vader", "sent_blob"])
     sentiments = df_news["headline"].apply(score_headline)
-    df_news["sent_vader"], df_news["sent_blob"] = zip(*sentiments)
+    df_news[["sent_vader", "sent_blob"]] = list(sentiments)
     df_news["date_only"] = df_news["date"].dt.tz_convert("UTC").dt.floor("D")
-    grouped = df_news.groupby(["date_only", "stock"])[["sent_vader", "sent_blob"]].mean().reset_index()
+    grouped = (
+        df_news.groupby(["date_only", "stock"])[["sent_vader", "sent_blob"]]
+        .mean()
+        .reset_index()
+    )
     grouped = grouped.rename(columns={"date_only": "date"})
     return grouped
 
