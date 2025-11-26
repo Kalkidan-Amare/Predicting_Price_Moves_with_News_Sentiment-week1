@@ -1,74 +1,72 @@
 # Predicting Price Moves with News Sentiment
 
-## Overview
-This project analyzes the Financial News and Stock Price Integration Dataset (FNSPID) to quantify how news sentiment influences stock price movements. The work spans three tasks: environment setup and EDA, technical indicator computation, and sentiment-versus-return correlation analysis. All deliverables target Nova Financial Solutions' goal of boosting forecasting accuracy through data-driven insights.
+Week 1 focuses on wiring an end‑to‑end workflow that ingests financial headlines, profiles the news stream, computes technical indicators, and measures how sentiment nudges daily stock returns. The repository is structured so every task runs from a CLI script, making it easy to regenerate the exact charts and CSVs used in the interim and final submissions.
 
-## Repository Structure
-`
+## Folder Layout
+```
 Predicting_Price_Moves_with_News_Sentiment-week1/
- .github/workflows/unittests.yml   # CI pipeline
- .vscode/settings.json             # VS Code configuration
- .gitignore
- README.md
- requirements.txt
- notebooks/                        # Notebook experiments
- scripts/                          # CLI entrypoints for tasks
- src/                              # Core analysis modules
- tests/                            # Unit tests
- data/                             # Raw/intermediate data (gitignored)
-`
+├── .github/workflows/unittests.yml   # GitHub Actions pipeline
+├── .vscode/settings.json             # Recommended editor settings
+├── data/                             # Raw + processed data (gitignored)
+├── notebooks/                        # Exploratory notebooks (optional)
+├── reports/                          # Generated CSVs/PNGs per task
+├── scripts/                          # CLI entrypoints
+├── src/                              # Reusable modules
+├── tests/                            # Pytest suite
+├── requirements.txt
+└── README.md
+```
 
-## Tasks Overview
-1. **Task 1  EDA & Stats**
-   - Descriptive statistics for text lengths and publisher counts
-   - Publication frequency analysis
-   - Keyword/topic extraction using NLP
-2. **Task 2  Technical Indicators**
-   - Load OHLCV data from CSV or yfinance
-   - Compute MA, RSI, MACD via TA-Lib / pandas fallbacks
-   - Visualize price action with overlays
-3. **Task 3  Sentiment vs Returns**
-   - Sentiment scoring (VADER/TextBlob)
-   - Daily return calculation
-   - Correlation analysis & reporting
+## Task Checklist
+| Task | Focus | Deliverables |
+| --- | --- | --- |
+| **Task 1 – EDA & Stats** | Headline lengths, publisher counts, publication cadence, keyword clouds | `scripts/run_task1.py` → CSVs + PNGs under `reports/task1/` |
+| **Task 2 – Technical indicators** | SMA(20/50), RSI(14), MACD, price overlays | `scripts/run_task2.py` → indicator CSVs, MA charts under `reports/task2/` |
+| **Task 3 – Sentiment vs. returns** | VADER/TextBlob scoring, daily return alignment, correlation stats | `scripts/run_task3.py` → merged dataset + correlation report under `reports/task3/` |
 
 ## Getting Started
-`ash
+```bash
 python -m venv .venv
-.\.venv\Scripts\activate  # Windows
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # macOS/Linux
 pip install -r requirements.txt
 python -m nltk.downloader vader_lexicon stopwords punkt
-`
+```
 
-### Environment Variables
-Create a .env file if you plan to store API keys or custom data paths:
-`
+Optional `.env` keys (defaults shown):
+```
 DATA_DIR=data
 YFINANCE_LOOKBACK=365
-`
+PRICES_DIR=prices
+DEFAULT_TICKER=AAPL
+```
 
-## Scripts
-| Script | Description |
-|--------|-------------|
-| scripts/run_task1.py | Executes Task 1 EDA pipeline and saves summary artifacts |
-| scripts/run_task2.py | Fetches price data, computes indicators, exports plots |
-| scripts/run_task3.py | Runs sentiment scoring, aligns with returns, and reports correlations |
+## CLI Usage
+```bash
+# Task 1 – headline profiling
+python scripts/run_task1.py --output reports/task1
 
-Each script accepts CLI arguments; run with python scripts/run_taskX.py --help for usage details.
+# Task 2 – indicators & plots for a ticker
+python scripts/run_task2.py --ticker AAPL --output reports/task2
+
+# Task 3 – sentiment vs returns correlation
+python scripts/run_task3.py --ticker AAPL --output reports/task3
+```
+Each script accepts `--help` for additional flags (date windows, custom data paths, etc.). All outputs land inside `reports/` so they can be dropped directly into the interim/final report.
 
 ## Testing & CI
-`ash
-pytest -v --cov=src
-`
-GitHub Actions executes linting (lake8), formatting (lack --check), and tests on every push/PR targeting main and feature branches.
+```bash
+pytest tests/ -v --cov=src --cov-report=term-missing
+```
+The GitHub Actions workflow mirrors the local steps: install deps, run pytest, and lint with flake8/black (both lint/test steps are `continue-on-error` so feedback appears even if one stage fails).
 
 ## Branch Strategy
-- 	ask-1  Environment, EDA scaffolding, documentation
-- 	ask-2  Technical indicators and quantitative analysis
-- 	ask-3  Sentiment correlation analysis and reporting
+- `task-1` – Environment scaffolding + EDA utilities
+- `task-2` – Technical indicators and plotting
+- `task-3` – Sentiment scoring, correlation analysis, report assets
 
-Merge via Pull Requests to ensure review history for interim/final submissions.
+All work merges back into `main` via Pull Requests so reviewer history stays intact.
 
-## Reporting
-- **Interim report:** Task 1 progress, Task 2 WIP (3 pages)
-- **Final report:** All tasks (10 pages, 10 plots), Medium-style narrative
+## Reporting Expectations
+- **Interim:** Task 1 write‑up + Task 2 WIP highlights (max 3 pages).
+- **Final:** Medium-style article covering all three tasks, ≤10 pages / 10 plots, plus supporting CSV/PNG artifacts inside `reports/`.

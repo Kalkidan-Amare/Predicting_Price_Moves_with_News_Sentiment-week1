@@ -6,7 +6,12 @@ from typing import Dict, List, Tuple
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-from wordcloud import WordCloud
+import warnings
+
+try:  # pragma: no cover - optional dependency
+    from wordcloud import WordCloud
+except ModuleNotFoundError:  # pragma: no cover
+    WordCloud = None  # type: ignore[assignment]
 
 
 sns.set_theme(style="whitegrid")
@@ -38,7 +43,14 @@ def publication_heatmap(df: pd.DataFrame) -> pd.DataFrame:
     return pivot
 
 
-def keyword_wordcloud(df: pd.DataFrame, max_words: int = 100) -> WordCloud:
+def keyword_wordcloud(df: pd.DataFrame, max_words: int = 100) -> WordCloud | None:
+    if WordCloud is None:
+        warnings.warn(
+            "wordcloud is not installed; skipping word cloud generation. "
+            "Install it via `pip install wordcloud` for this visualization.",
+            RuntimeWarning,
+        )
+        return None
     text = " ".join(df["headline"].dropna().tolist())
     wc = WordCloud(width=1200, height=600, background_color="white", max_words=max_words).generate(text)
     plt.figure(figsize=(12, 6))
